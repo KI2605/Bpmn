@@ -1,0 +1,74 @@
+import { Component, ViewChild } from '@angular/core';
+import { DiagramEditorComponent } from './diagram-editor/diagram-editor.component';
+import * as BpmnJS from 'bpmn-js/dist/bpmn-modeler.production.min.js';
+import * as FileSaver from 'file-saver'
+import { HttpClient } from '@angular/common/http';
+import { DiagramService } from './services/diagram.service';
+import { SaveDiagramRequest } from './models/diagram-save.interface';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss']
+})
+export class AppComponent {
+  title = 'ng-bpmn-js';
+  diagramFile = '_assets_bpmn_default.bpmn';
+  diagramId = 'BB91CD48-5EF6-417F-BA28-DE276BCD196E';
+  importError?: Error;
+
+  @ViewChild(DiagramEditorComponent) diagramComponent: DiagramEditorComponent;
+
+
+  constructor(
+    private http: HttpClient,
+    private diagramService: DiagramService
+  ) {
+  }
+  
+  loadWorkflow(workflowFile: string): void {
+    this.diagramFile = workflowFile;
+  }
+
+  clearEditor(): void {
+    this.diagramFile = '_assets_bpmn_default.bpmn';
+  }
+
+  handleImported(event: any) {
+    const {
+      type,
+      error,
+      warnings
+    } = event;
+
+    if (type === 'success') {
+      console.log(`Rendered diagram (%s warnings)`, warnings.length);
+    }
+
+    if (type === 'error') {
+      console.error('Failed to render diagram', error);
+    }
+
+    this.importError = error;
+  }
+
+  async saveWorkFlow(navigateTo?: any): Promise<void> {
+    try {
+      let bpmnContent: any = await this.diagramComponent.getBpmnContent();
+      //bpmnContent.saveXML();
+      const blob = new Blob([bpmnContent.xml], {type: 'text/plain;charset=utf-8'});
+      FileSaver.saveAs(blob, '/assets/bpmn/default.bpmn');
+      console.log(bpmnContent.xml);
+
+      let request: SaveDiagramRequest = {
+        diagramId: this.diagramId,
+        diagramXml: `${bpmnContent.xml}`
+      }
+
+      this.diagramService.saveDiagram(request).subscribe(() => console.log("done"));
+
+    } catch (err) {
+      // console.log(err)
+    }
+  }
+}
