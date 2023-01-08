@@ -1,4 +1,5 @@
 ﻿using BmpmnApp.ApiContract.Requests;
+using BmpmnApp.ApiContract.Responses;
 using BpmnApp.Domain.Contracts;
 using BpmnApp.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -37,11 +38,20 @@ namespace BpmnApp.Controllers
         }
 
         [HttpPost("add-subprocess")]
-        public async Task<string> CreateSubProcess([FromBody] CreateSubProcessRequest request)
+        public async Task<CreateSubpocessResponse> CreateSubProcess([FromBody] CreateSubProcessRequest request)
         {
             //Guid personId = Guid.Parse("4C652D97-7C32-4008-9762-48C04D73B7C1");
             var s = await diagramService.CreateSubProcess(request);
             return s;
+        }
+
+        [Route("sub-processes/{diagramId}")]
+        [HttpGet]
+        public async Task<List<DiagramSubprocessResponse>> GetDiagramSubprocesses(Guid diagramId)
+        {
+            //Guid personId = Guid.Parse("4C652D97-7C32-4008-9762-48C04D73B7C1");
+            List<DiagramSubprocessResponse> result = await diagramService.GetDiagramSubprocesses(diagramId);
+            return result;
         }
     }
 }

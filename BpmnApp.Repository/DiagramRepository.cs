@@ -1,10 +1,12 @@
 ﻿using BmpmnApp.ApiContract.Requests;
+using BmpmnApp.ApiContract.Responses;
 using BpmnApp.DataAccess.Ef.Models;
 using BpmnApp.Domain.Constants;
 using BpmnApp.Domain.Dependencies;
 using BpmnApp.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -18,7 +20,7 @@ namespace BpmnApp.Repository
             context = diaContext;
         }
 
-        public async Task<string> CreateSubProcess(CreateSubProcessRequest request)
+        public async Task<Guid> CreateSubProcess(CreateSubProcessRequest request)
         {
             Diagram diagram = new Diagram
             {
@@ -41,10 +43,21 @@ namespace BpmnApp.Repository
             context.AddRange(diagram, subProcess);
             await context.SaveChangesAsync();
 
-            return diagram.DiagramId.ToString();
+            return diagram.DiagramId;
         }
 
+        public Task<List<DiagramSubprocessResponse>> GetDiagramSubprocesses(Guid diagramId)
+        {
+            return (from spd in context.SubProcessDiagram
+                    join d in context.Diagram on spd.SubProcessDiagramId equals d.DiagramId
+                    where spd.ParentDiagramId == diagramId
+                    select new DiagramSubprocessResponse
+                    {
+                        DiagramTaskId = spd.ParentElementName,
+                        SubprocessDiagramId = spd.SubProcessDiagramId
+                    }).ToListAsync();
 
+        }
 
         public async Task<DiagramModel> GetDiagramXml(Guid diagramId)
         {

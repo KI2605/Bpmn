@@ -1,4 +1,5 @@
 ﻿using BmpmnApp.ApiContract.Requests;
+using BmpmnApp.ApiContract.Responses;
 using BpmnApp.Domain.Contracts;
 using BpmnApp.Domain.Dependencies;
 using BpmnApp.Domain.Models;
@@ -17,9 +18,15 @@ namespace BpmnApp.Domain.Services
             diagramRepository = _diagramRepository;
         }
 
-        public Task<string> CreateSubProcess(CreateSubProcessRequest request)
+        public async Task<CreateSubpocessResponse> CreateSubProcess(CreateSubProcessRequest request)
         {
-            return diagramRepository.CreateSubProcess(request);
+            var response = await diagramRepository.CreateSubProcess(request);
+            return new CreateSubpocessResponse { DiagramId = response };
+        }
+
+        public Task<List<DiagramSubprocessResponse>> GetDiagramSubprocesses(Guid diagramId)
+        {
+            return diagramRepository.GetDiagramSubprocesses(diagramId);
         }
 
         public Task<DiagramModel> GetDiagramXml(Guid diagramId)
