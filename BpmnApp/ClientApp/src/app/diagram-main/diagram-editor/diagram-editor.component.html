@@ -1,0 +1,14 @@
+<div>
+  <button type="button" *ngIf="isAddButtonShown" (click)="addSubProcess()">Add Subprocess</button>
+  <button type="button" *ngIf="isViewSubprocessButtonShown" (click)="viewEditSubProcess()">View/Edit Subprocess</button>
+</div>
+<li routerLinkActive="active">
+    <a routerLink="/diagramId/subprocess-editor/:taskId" target="_blank">
+      <span class="item-icon">
+          <i class="icon-question"></i>
+      </span>
+      <span class="text-frame">About <i class="icon icon-external-link"></i></span>
+    </a>
+</li>
+<div #ref class="diagram-container"></div>
+<div class="properties-panel" id="properties"></div>
