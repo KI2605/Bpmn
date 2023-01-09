@@ -2,10 +2,11 @@ import { Component, ViewChild } from '@angular/core';
 import * as BpmnJS from 'bpmn-js/dist/bpmn-modeler.production.min.js';
 import * as FileSaver from 'file-saver'
 import { HttpClient } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DiagramEditorComponent } from './diagram-editor/diagram-editor.component';
 import { DiagramService } from '../services/diagram.service';
 import { SaveDiagramRequest } from '../models/diagram-save.interface';
+//import { DiagramViewerComponent } from './diagram-viewer/diagram-viewer.component';
 
 @Component({
     selector: '[diagram-main]',
@@ -19,12 +20,14 @@ import { SaveDiagramRequest } from '../models/diagram-save.interface';
     importError?: Error;
   
     @ViewChild(DiagramEditorComponent) diagramComponent: DiagramEditorComponent;
+    //@ViewChild(DiagramViewerComponent) viewerComponent: DiagramViewerComponent;
   
   
     constructor(
       private http: HttpClient,
       private diagramService: DiagramService,
-      private route: ActivatedRoute
+      private route: ActivatedRoute,
+      private router: Router
     ) {
       this.route.params.subscribe( params => console.log(params));
     }
@@ -77,4 +80,9 @@ import { SaveDiagramRequest } from '../models/diagram-save.interface';
         // console.log(err)
       }
     }
+
+    isViewMode(): boolean {
+        return this.router.url.includes('/diagram-viewer' || '/subprocess-viewer/')
+    }
+
   }

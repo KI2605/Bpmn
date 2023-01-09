@@ -19,6 +19,7 @@ import { DOCUMENT } from '@angular/common';
 import { stringify } from '@angular/compiler/src/util';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IDiagramSubprocess } from '../../models/diagram-subprocess.interface';
+import { SaveDiagramRequest } from 'src/app/models/diagram-save.interface';
 //import testTemplate from 'src/app/custom-bpmnjs/element-templates/test.json';
 //import sampleTemplate from 'camunda-modeler/resources/element-templates/samples.json';
 
@@ -47,7 +48,6 @@ export class DiagramEditorComponent implements OnInit {
 
   @ViewChild('ref', { static: true }) private el!: ElementRef;
   @Output() private importDone: EventEmitter<any> = new EventEmitter();
-  @Output() diagramIdEmitter: EventEmitter<string> = new EventEmitter();
   @Input() public fileDiagramId: string;
   ngrxStore: any;
 
@@ -68,7 +68,9 @@ export class DiagramEditorComponent implements OnInit {
       taskId: this.previousElementForAddSubPr.id
     }
 
+    this.saveDiagram();
     this.diagramService.createSubprocess(request).subscribe(result => {
+      this.getSubproccess(this.diagramId);
       this.subprocessLink = this.subprocessLink + `/${result.diagramId}`;
       window.open(this.subprocessLink, '_blank');
     });
@@ -79,7 +81,7 @@ export class DiagramEditorComponent implements OnInit {
     window.open(this.subprocessLink, '_blank');
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     /*     this.getServiceTasks().subscribe(data => {
           sessionStorage.setItem("serviceTasks", data);
         });
@@ -160,17 +162,20 @@ export class DiagramEditorComponent implements OnInit {
 
       events.forEach((event) => {
 
-        eventBus.on(event, (e) => {
+        eventBus.on(event, async (e) => {
           // e.element = the model element
           // e.gfx = the graphical element
 
           // console.log(event, 'on', e.element.id);
           // console.log(e.element.type);
+          //let diagramData: any = await this.getBpmnContent();
+
           if (event === 'element.click' && !!e.element.id) {
-            aid = e.element.id;
-            atype = e.element.type;
-            this.isAddButtonShown = this.isAddSubProcessButtonShown(this.maptoModel(aid, atype));
-            console.log(this.isAddButtonShown);
+            //if (diagramData.xml.includes(e.element.id)) {
+              aid = e.element.id;
+              atype = e.element.type;
+              this.isAddButtonShown = this.isAddSubProcessButtonShown(this.maptoModel(aid, atype));
+            //}
           }
           
         });
@@ -261,17 +266,16 @@ export class DiagramEditorComponent implements OnInit {
 
   loadDiagram(file: string): Subscription {
     this.overlays = this.bpmnJS.get('overlays');
-    let diagramId;
     if (!this.subProcessDiagramId) {
-      diagramId = this.fileDiagramId;
+      this.diagramId = this.fileDiagramId;
     }
     else {
-      diagramId = this.subProcessDiagramId;
+      this.diagramId = this.subProcessDiagramId;
     }
     
     return (
       //this.http.get('/assets/bpmn/_assets_bpmn_default.bpmn', { responseType: 'text' })
-      this.diagramService.getDiagram(diagramId)
+      this.diagramService.getDiagram(this.diagramId)
         .pipe(
           switchMap((diagram: IDiagram) => this.importDiagram(diagram)),
           map(result => result.warnings),
@@ -282,7 +286,7 @@ export class DiagramEditorComponent implements OnInit {
               type: 'success',
               warnings
             });
-            this.getSubproccess(diagramId);
+            this.getSubproccess(this.diagramId);
             // this.overlays.add('Activity_1iag6z7', 'note', {
             //   position: {
             //     bottom: 0,
@@ -313,8 +317,14 @@ export class DiagramEditorComponent implements OnInit {
     return from(this.bpmnJS.importXML(diagram.diagramXml) as Promise<{ warnings: Array<any> }>);
   }
 
-  public saveDiagram() {
-    
+  public async saveDiagram() {
+    let bpmnContent: any = await this.getBpmnContent();
+    let request: SaveDiagramRequest = {
+      diagramId: this.diagramId,
+      diagramXml: `${bpmnContent.xml}`
+    }
+
+    this.diagramService.saveDiagram(request).subscribe(() => console.log("done"));
   }
 
   getBpmnContent(): Promise<void> {
@@ -334,10 +344,12 @@ export class DiagramEditorComponent implements OnInit {
       return false;
     }
     if (element.type === 'bpmn:Process') {
+      this.isViewSubprocessButtonShown = false;
       this.previousElementForAddSubPr = null;
       return false;
     }
       this.previousElementForAddSubPr = element;
+      this.isViewSubprocessButtonShown = false;
       return true;
   }
 

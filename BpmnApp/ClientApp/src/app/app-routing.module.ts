@@ -14,6 +14,14 @@ const routes: Routes = [
     path: 'diagram-editor',
     component: DiagramMainComponent
   },
+  { 
+    path: 'diagram-viewer',
+    component: DiagramMainComponent
+  },
+  {
+    path: ':diagramId/subprocess-viewer/:taskId/:subprocessDiagramId',
+    component: DiagramMainComponent
+  },
   {
     path: ':diagramId/subprocess-editor/:taskId/:subprocessDiagramId',
     component: DiagramMainComponent

@@ -26,6 +26,11 @@ import {
     label: 'Purple',
     fill: '#E1BEE7',
     stroke: '#5B176D'
+  },
+  {
+    label: 'candyRed',
+    fill: '#FCE7EC', 
+    stroke: '#E83E66'
   } ];
   
   
